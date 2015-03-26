@@ -10,18 +10,17 @@ public class library_database {
 
 	static Statement stmt = null;
 	static Connection con = null; 
+	static Scanner in = null;
 	
 	//entry point to program
 	public static void main(String[] args) {
 		System.out.println("Welcome to the Metz Library Database");
-		//Connection con = null;
-        
 		 try
 		 {
 			 //remember to replace all this info;;;;
-		     String userName = "cs5530";
-	         String password = "cs5530_Spring2015";
-        	 String url = "jdbc:mysql://georgia.eng.utah.edu/cs5530db";
+		     String userName = "cs5530u13";
+	         String password = "90a6snh1";
+        	 String url = "jdbc:mysql://georgia.eng.utah.edu/cs5530db13";
         	 
         	 //Does all the connection to our database
 	         Class.forName ("com.mysql.jdbc.Driver").newInstance ();
@@ -48,13 +47,15 @@ public class library_database {
 		    		+ "12. Get book statistics\n"
 		    		+ "13. Get user statistics\n"
 		    		+ "14. Exit the Database\n"
-		    		+ "Please enter the integer associated with your choice\n");
+		    		+ "Please enter the integer associated with your choice");
 		   
-			    Scanner in = new Scanner(System.in);
+			    in = new Scanner(System.in);
 			    int choice = in.nextInt();
+			    in.nextLine();
 			    
 			    switch (choice) {
 			    case 1:
+			    	new_user();
 			    	break;
 			    case 2:
 			    	break;
@@ -140,11 +141,36 @@ public class library_database {
 	
 	
 	
-	
+	public static void new_user(){
+		System.out.println("Enter username of new user:");
+    	String username = in.nextLine();
+    	System.out.println("Enter full name of new user:");
+    	String name = in.nextLine();
+    	System.out.println("Enter address of new user:");
+    	String address = in.nextLine();
+    	System.out.println("Enter phone number of new user:");
+    	String phone = in.nextLine();
+    	System.out.println("Enter email address of new user:");
+    	String email = in.nextLine();
+    	int user_id = 5;
+
+    	String user_sql = "INSERT INTO USER(user_id, username, name, address, email, phone)"
+    			+ "VALUES('"+user_id+"','"+username+"','"+name+"','"+address+"','"+email+"','"+phone+"')"; 
+    	//System.out.println(user_sql);
+    	try{
+    		stmt.executeUpdate(user_sql);
+    		System.out.println("*New user " + username +" has been added to the database. UserID: " + user_id + "*");
+    	}
+    	catch(Exception e){
+    		System.out.println("SOMETHING WENT WRONG, HIT ENTER TO CONTINUE");
+    	}
+    	in.nextLine();
+	}
 	
 	public static void close(){
 		try{
 			stmt.close();
+			in.close();
 			}
 		catch (Exception e)
 			{
