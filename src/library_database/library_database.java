@@ -64,6 +64,7 @@ public class library_database {
 			    case 4:
 			    	break;
 			    case 5:
+			    	new_book();
 			    	break;
 			    case 6:
 			    	break;
@@ -141,9 +142,85 @@ public class library_database {
 	
 	
 	
+	//FUNCTION FOR ADDING NEW BOOK TO THE DATABASE
+	public static void new_book(){
+		try{
+			String isbn = null;
+			boolean isbn_loop = true;
+			//this loop ensures the username is unique
+			while (isbn_loop)
+			{
+				System.out.println("Enter the isbn of the book to add to database:");
+		    	isbn = in.nextLine();
+		    	String query = "SELECT * FROM BOOK_DIR where isbn = ?";
+		    	PreparedStatement query_statment = con.prepareStatement(query);
+		    	query_statment.setString(1, "" + isbn);
+		    	ResultSet rs1=query_statment.executeQuery();
+		    	if (rs1.next()){
+		        	System.out.println("This isbn already exists in database: Please try another");
+		    	}
+		    	else 
+		    	{
+		    		isbn_loop = false;
+		    	}
+			}
+			//handles all input for new book
+	    	System.out.println("Enter title for new library book:");
+	    	String title = in.nextLine();
+	    	System.out.println("Enter author of new library book");
+	    	String author = in.nextLine();
+	    	System.out.println("Enter pulisher for new library book:");
+	    	String publisher = in.nextLine();
+	    	System.out.println("Enter publication year of new library book:");
+	    	String pub_year = in.nextLine();
+	    	System.out.println("Enter format of new library book:");
+	    	String format = in.nextLine();	
+	    	System.out.println("Enter subject of new library book:");
+	    	String subject = in.nextLine();
+	    	System.out.println("Enter summary of new library book:");
+	    	String summary = in.nextLine();
+	    	
+	    	
+	    	String book_sql = "INSERT INTO BOOK_DIR(isbn, title, author, publisher, publication_year, format, subject, summary)"
+	    			+ "VALUES('"+isbn+"','"+title+"','"+author+"','"+publisher+"','"+pub_year+"','"+format+"','"+subject+"','"+summary+"')"; 
+
+			stmt.executeUpdate(book_sql);
+			System.out.println("*New book " + title +" has been added to the database. isbn: " + isbn + "*\n"
+	    				+ "please hit the enter key to return to main menu");
+		}
+		catch(Exception e){
+    		System.out.println("Something went wrong adding a new book to the database");
+		}
+		//Forces user to hit enter to return home
+    	in.nextLine();
+	}
+	
+	
+	
+	//FUNCTION FOR ADDING A NEW USER TO THE DATABASE
 	public static void new_user(){
-		System.out.println("Enter username of new user:");
-    	String username = in.nextLine();
+		//Begin try
+		try{
+		String username = null;
+		boolean name_loop = true;
+		//this loop ensures the username is unique
+		while (name_loop)
+		{
+			System.out.println("Enter username of new user:");
+	    	username = in.nextLine();
+	    	String query = "SELECT * FROM USER where username = ?";
+	    	PreparedStatement query_statment = con.prepareStatement(query);
+	    	query_statment.setString(1, "" + username);
+	    	ResultSet rs1=query_statment.executeQuery();
+	    	if (rs1.next()){
+	        	System.out.println("Username is taken: Please try another");
+	    	}
+	    	else 
+	    	{
+	    		name_loop = false;
+	    	}
+		}
+		//handles all input for user
     	System.out.println("Enter full name of new user:");
     	String name = in.nextLine();
     	System.out.println("Enter address of new user:");
@@ -152,21 +229,30 @@ public class library_database {
     	String phone = in.nextLine();
     	System.out.println("Enter email address of new user:");
     	String email = in.nextLine();
-    	int user_id = 5;
 
+    	//Finds the current max ID number in the SQL database and increments it.
+    	String ID_query = "Select MAX(user_id) FROM USER";
+    	PreparedStatement query2 = con.prepareStatement(ID_query);
+    	ResultSet rs2=query2.executeQuery();
+    	rs2.next();
+    	int user_id = rs2.getInt(1) + 1;
+
+    	
     	String user_sql = "INSERT INTO USER(user_id, username, name, address, email, phone)"
     			+ "VALUES('"+user_id+"','"+username+"','"+name+"','"+address+"','"+email+"','"+phone+"')"; 
-    	//System.out.println(user_sql);
-    	try{
-    		stmt.executeUpdate(user_sql);
-    		System.out.println("*New user " + username +" has been added to the database. UserID: " + user_id + "*");
+
+		stmt.executeUpdate(user_sql);
+		System.out.println("*New user " + username +" has been added to the database. UserID: " + user_id + "*\n"
+    				+ "please hit the enter key to return to main menu");
     	}
     	catch(Exception e){
-    		System.out.println("SOMETHING WENT WRONG, HIT ENTER TO CONTINUE");
+    		System.out.println("Something went wrong adding a new user");
     	}
+		//Forces user to hit enter to return home
     	in.nextLine();
 	}
 	
+	//FUNCTION FOR CLOSING THE CONNECTION TO THE DATABASE
 	public static void close(){
 		try{
 			stmt.close();
