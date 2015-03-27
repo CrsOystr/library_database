@@ -176,13 +176,13 @@ public class library_database {
 	    	System.out.println("Enter format of new library book:");
 	    	String format = in.nextLine();	
 	    	System.out.println("Enter subject of new library book:");
-	    	String subject = in.nextLine();
+	    	String book_subject = in.nextLine();
 	    	System.out.println("Enter summary of new library book:");
 	    	String summary = in.nextLine();
 	    	
 	    	
-	    	String book_sql = "INSERT INTO BOOK_DIR(isbn, title, author, publisher, publication_year, format, subject, summary)"
-	    			+ "VALUES('"+isbn+"','"+title+"','"+author+"','"+publisher+"','"+pub_year+"','"+format+"','"+subject+"','"+summary+"')"; 
+	    	String book_sql = "INSERT INTO BOOK_DIR(isbn, title, author, publisher, pub_year, format, book_subject, summary)"
+	    			+ "VALUES('"+isbn+"','"+title+"','"+author+"','"+publisher+"','"+pub_year+"','"+format+"','"+book_subject+"','"+summary+"')"; 
 
 			stmt.executeUpdate(book_sql);
 			System.out.println("*New book " + title +" has been added to the database. isbn: " + isbn + "*\n"
@@ -208,7 +208,7 @@ public class library_database {
 		{
 			System.out.println("Enter username of new user:");
 	    	username = in.nextLine();
-	    	String query = "SELECT * FROM USER where username = ?";
+	    	String query = "SELECT * FROM LIB_USER where username = ?";
 	    	PreparedStatement query_statment = con.prepareStatement(query);
 	    	query_statment.setString(1, "" + username);
 	    	ResultSet rs1=query_statment.executeQuery();
@@ -231,14 +231,14 @@ public class library_database {
     	String email = in.nextLine();
 
     	//Finds the current max ID number in the SQL database and increments it.
-    	String ID_query = "Select MAX(user_id) FROM USER";
+    	String ID_query = "Select MAX(user_id) FROM LIB_USER";
     	PreparedStatement query2 = con.prepareStatement(ID_query);
     	ResultSet rs2=query2.executeQuery();
     	rs2.next();
     	int user_id = rs2.getInt(1) + 1;
 
     	
-    	String user_sql = "INSERT INTO USER(user_id, username, name, address, email, phone)"
+    	String user_sql = "INSERT INTO LIB_USER(user_id, username, uname, address, email, phone)"
     			+ "VALUES('"+user_id+"','"+username+"','"+name+"','"+address+"','"+email+"','"+phone+"')"; 
 
 		stmt.executeUpdate(user_sql);
