@@ -67,6 +67,7 @@ public class library_database {
 			    	new_book();
 			    	break;
 			    case 6:
+			    	add_books();
 			    	break;
 			    case 7:
 			    	break;
@@ -140,7 +141,59 @@ public class library_database {
 	         }
 	}
 	
-	
+	//FUNCTION FOR ADDING COPIES OF BOOKS
+	public static void add_books(){
+		try{
+			String isbn = null;
+			boolean isbn_loop = true;
+			//this loop ensures the isbn exists in the database
+			while (isbn_loop)
+			{
+				System.out.println("Enter the isbn of the books you want to add to database:");
+		    	isbn = in.nextLine();
+		    	String query = "SELECT * FROM BOOK_DIR where isbn = ?";
+		    	PreparedStatement query_statment = con.prepareStatement(query);
+		    	query_statment.setString(1, "" + isbn);
+		    	ResultSet rs1=query_statment.executeQuery();
+		    	if (rs1.next()){
+		    		isbn_loop = false;
+		    	}
+		    	else 
+		    	{
+		        	System.out.println("You can only add copies of books that already exist in the library database.");
+		        	System.out.println("Hit enter to return to the main menu and add information about this book to the database.");
+		        	in.nextLine();
+		        	return;
+		    	}
+			}
+	    	System.out.println("Enter the number of copies as an integer:");
+	    	int copies = in.nextInt();
+			in.nextLine();
+	    	System.out.println("Enter the location these books will be located in:");
+	    	String location = in.nextLine();
+			
+			
+	    	String isbn_query = "SELECT MAX(copy_number) FROM BOOK_STOCK WHERE isbn = ? GROUP BY isbn";
+	    	PreparedStatement query2 = con.prepareStatement(isbn_query);
+	    	query2.setString(1, "" + isbn);
+	    	
+	    	
+
+    		System.out.println(query2);
+	    	ResultSet rs2=query2.executeQuery();
+    		System.out.println(query2);
+	    	rs2.next();
+	    	int user_id = rs2.getInt(1) + 1;
+			
+		
+		}
+		catch(Exception e){
+    		System.out.println("Something went wrong adding copies of books to database");
+		}
+		//Forces user to hit enter to return home
+    	in.nextLine();
+    	return;
+	}
 	
 	//FUNCTION FOR ADDING NEW BOOK TO THE DATABASE
 	public static void new_book(){
@@ -193,6 +246,7 @@ public class library_database {
 		}
 		//Forces user to hit enter to return home
     	in.nextLine();
+    	return;
 	}
 	
 	
@@ -231,7 +285,7 @@ public class library_database {
     	String email = in.nextLine();
 
     	//Finds the current max ID number in the SQL database and increments it.
-    	String ID_query = "Select MAX(user_id) FROM LIB_USER";
+    	String ID_query = "SELECT MAX(user_id) FROM LIB_USER";
     	PreparedStatement query2 = con.prepareStatement(ID_query);
     	ResultSet rs2=query2.executeQuery();
     	rs2.next();
@@ -250,6 +304,7 @@ public class library_database {
     	}
 		//Forces user to hit enter to return home
     	in.nextLine();
+    	return;
 	}
 	
 	//FUNCTION FOR CLOSING THE CONNECTION TO THE DATABASE
@@ -277,5 +332,6 @@ public class library_database {
          }	
 	 
 	 System.out.println("Program completed");
+	 return;
 	}
 }
