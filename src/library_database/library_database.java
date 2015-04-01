@@ -65,6 +65,7 @@ public class library_database {
 			    	wait_list();
 			    	break;	
 			    case 4:
+			    	user_report();
 			    	break;
 			    case 5:
 			    	new_book();
@@ -144,6 +145,10 @@ public class library_database {
 	         }
 	}
 	
+	
+	public static void user_report(){
+	
+	}
 	
 	//Function for allowing users to check out books
 	public static void check_out(){
@@ -231,7 +236,7 @@ public class library_database {
 		    	//System.out.println(state4);
 		    	state4.executeUpdate();
 		    	
-		    	System.out.println("*Book ISBN " + isbn +" has been checked out by user " + user_id);
+		    	System.out.println("*Book ISBN " + isbn +" has been checked out Due Date: " + date1);
 	    	}
 	    	else{
 	        	System.out.println("There are currently no copies of this book available for checkout"); 
