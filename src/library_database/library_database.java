@@ -74,6 +74,7 @@ public class library_database {
 			    	add_books();
 			    	break;
 			    case 7:
+			    	late_books();
 			    	break;
 			    case 8:
 			    	break;
@@ -147,7 +148,80 @@ public class library_database {
 	
 	
 	public static void user_report(){
+		try{
+			
+			
+			
+		}
+		catch(Exception e){
+    		System.out.println("Something went wrong with this report");
+		}
+		//Forces user to hit enter to return home
+		System.out.println("Please hit enter to return to the main menu");
+    	in.nextLine();
+    	return;
+	}
 	
+	
+	//FUNCTION FOR CHECKING WHICH BOOKS ARE CURRENTLY LATE
+	public static void late_books(){
+		try{
+	    	long time = System.currentTimeMillis();
+	    	java.sql.Date date = new java.sql.Date(time);
+	    	
+			System.out.println("The current date is: " + date);
+			System.out.println("Enter a negative or positive number to move date back or forward and check for late books" );
+	    	String date_string = in.nextLine();
+	    	
+	    	Calendar cal = Calendar.getInstance();
+	    	cal.setTime(date);
+	    	cal.add(Calendar.DAY_OF_YEAR,Integer.parseInt(date_string));
+	    	java.sql.Date date1 = new java.sql.Date(cal.getTimeInMillis());
+			System.out.println("The current date is: " + date1);
+
+			String late_query = "SELECT d.title, c.isbn, c.copy_number, c.due_date, u.uname, u.phone, u.email "
+					+   "FROM CHECK_OUT c, LIB_USER u, BOOK_DIR d "
+					+   "WHERE c.due_date < ? "
+					+	"AND c.user_id = u.user_id "
+					+	"AND c.isbn = d.isbn ";
+	    	PreparedStatement query_stat = con.prepareStatement(late_query);
+	    	query_stat.setString(1, "" + date1);
+	    	ResultSet rs1=query_stat.executeQuery();
+	    	
+	    	System.out.print("LIST OF LATE BOOKS: \n");
+
+		    while(rs1.next())
+		    {
+		    	System.out.print("book title: ");
+		    	System.out.print(rs1.getString("title"));
+		    	System.out.print("	ISBN: ");
+		    	System.out.print(rs1.getString("isbn"));
+		    	System.out.print("	COPY NUMBER: ");
+		    	System.out.print(rs1.getString("copy_number"));
+		    	System.out.print("	DUE DATE: ");
+		    	System.out.print(rs1.getString("due_date"));
+		    	System.out.print("	NAME: ");
+		    	System.out.print(rs1.getString("uname"));
+		    	System.out.print("	PHONE: ");
+		    	System.out.print(rs1.getString("phone"));
+		    	System.out.print("	EMAIL: ");
+		    	System.out.print(rs1.getString("email"));
+		    	System.out.print("\n");
+		    }
+		    System.out.println("");
+			
+			
+			
+			
+			
+		}
+		catch(Exception e){
+    		System.out.println("Something went wrong reporting the late books");
+		}
+		//Forces user to hit enter to return home
+		System.out.println("Please hit enter to return to the main menu");
+    	in.nextLine();
+    	return;
 	}
 	
 	//Function for allowing users to check out books
