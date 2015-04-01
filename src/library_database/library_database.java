@@ -4,6 +4,7 @@
 package library_database;
 
 import java.sql.*;
+import java.util.Calendar;
 import java.util.Scanner;
 
 public class library_database {
@@ -58,6 +59,7 @@ public class library_database {
 			    	new_user();
 			    	break;
 			    case 2:
+			    	check_out();
 			    	break;
 			    case 3:
 			    	wait_list();
@@ -142,6 +144,112 @@ public class library_database {
 	         }
 	}
 	
+	
+	//Function for allowing users to check out books
+	public static void check_out(){
+		try{
+			String isbn = null;
+			boolean isbn_loop = true;
+			//this loop ensures the isbn exists in the database
+			while (isbn_loop)
+			{
+				System.out.println("Enter the isbn of the book to check out:");
+		    	isbn = in.nextLine();
+		    	String query = "SELECT * FROM BOOK_STOCK where isbn = ?";
+		    	PreparedStatement query_statment = con.prepareStatement(query);
+		    	query_statment.setString(1, "" + isbn);
+		    	ResultSet rs1=query_statment.executeQuery();
+		    	if (rs1.next()){
+		    		isbn_loop = false;
+		    	}
+		    	else 
+		    	{
+		        	System.out.println("You can only check out books that are currently stocked in the library.");
+		        	System.out.println("Hit enter to return to the main menu and add information about this book to the database.");
+		        	in.nextLine();
+		        	return;
+		    	}
+			}
+			System.out.println("Enter userID to be added to waitlist:");
+	    	String user_id = in.nextLine();
+	    	
+	    	String wait_query = "SELECT * FROM WAIT_LIST where isbn = ?";
+	    	PreparedStatement query_stat = con.prepareStatement(wait_query);
+	    	query_stat.setString(1, "" + isbn);
+	    	ResultSet rs1=query_stat.executeQuery();
+	    	//Will go into this block if a waitlist for the book exists
+	    	if (rs1.next()){
+	    		//inside this block we try to find if the user_id is the one waiting the longest
+		    	String final_query = "SELECT user_id FROM WAIT_LIST where isbn = ? GROUP BY isbn HAVING min(wait_since)";
+		    	PreparedStatement query = con.prepareStatement(final_query);
+		    	query.setString(1, "" + isbn);
+		    	ResultSet rs2=query_stat.executeQuery();
+		    	rs2.next();
+		    	int user_id2 = rs2.getInt(1);
+		    	int user_id3 = Integer.parseInt(user_id);
+		    	if (user_id3 == user_id2)
+		    	{
+		    		System.out.println("User " + user_id2 +" is first in line on the waitlist");
+
+		    	}
+		    	else
+		    	{
+		        	System.out.println("There are people waiting for this item in front of you, so it is currently not available to checkout"); 
+		        	System.out.println("If you are not already on the waitlist hit enter to return to the main menu.");
+		        	in.nextLine();
+		        	return;
+		    	}
+	    	}
+	    	
+	    	//This section checks to make sure a book is available
+	    	String check_query = "SELECT copy_number FROM BOOK_STOCK where isbn = ? and location <> 'checkedout' and location <> 'lost'";
+	    	PreparedStatement check_state= con.prepareStatement(check_query);
+	    	check_state.setString(1, isbn);
+	    	ResultSet check_result = check_state.executeQuery();
+	    	if (check_result.next()){
+		    	String copy_number = check_result.getString("copy_number");
+		    	String query3 = "INSERT INTO CHECK_OUT (user_id, isbn, copy_number, due_date) "
+		    			+ "VALUES(?,?,?,?)";
+		    	PreparedStatement state3 = con.prepareStatement(query3);
+		    	state3.setString(1, user_id);
+		    	state3.setString(2, isbn);
+		    	state3.setString(3, copy_number);
+		    	long time = System.currentTimeMillis();
+		    	java.sql.Date date = new java.sql.Date(time);
+		    	Calendar cal = Calendar.getInstance();
+		    	cal.setTime(date);
+		    	cal.add(Calendar.DAY_OF_YEAR,30);
+		    	java.sql.Date date1 = new java.sql.Date(cal.getTimeInMillis());
+		    	state3.setDate(4,date1);
+		    	//System.out.println(state3);
+		    	state3.executeUpdate();
+		    	
+		    	String query4 = "UPDATE BOOK_STOCK SET location = 'checkedout' WHERE isbn = ? AND copy_number = ?";
+		    	PreparedStatement state4= con.prepareStatement(query4);
+		    	state4.setString(1, isbn);
+		    	state4.setString(2, copy_number);
+		    	//System.out.println(state4);
+		    	state4.executeUpdate();
+		    	
+		    	System.out.println("*Book ISBN " + isbn +" has been checked out by user " + user_id);
+	    	}
+	    	else{
+	        	System.out.println("There are currently no copies of this book available for checkout"); 
+	        	System.out.println("Hit enter to return to the  main menu.");
+	        	in.nextLine();
+	        	return;
+	    	}
+	    	
+		}
+		catch(Exception e){
+    		System.out.println("Something went wrong checking out the book");
+		}
+		//Forces user to hit enter to return home
+		System.out.println("Please hit enter to return to the main menu");
+    	in.nextLine();
+    	return;
+	}
+	
 	//Function for allowing users to be added to a waitlist
 	public static void wait_list(){
 		try{
@@ -169,6 +277,7 @@ public class library_database {
 			}
 			System.out.println("Enter userID to be added to waitlist:");
 	    	String user_id = in.nextLine();
+	    	
 			
 	    	String wait_query = "INSERT INTO WAIT_LIST(user_id, isbn, wait_since) "
 	    			+ "VALUES(?,?,?)";
