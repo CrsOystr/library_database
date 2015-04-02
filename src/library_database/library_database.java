@@ -77,10 +77,12 @@ public class library_database {
 			    	late_books();
 			    	break;
 			    case 8:
+			    	review_book();
 			    	break;
 			    case 9:
 			    	break;
 			    case 10:
+			    	return_book();
 			    	break;
 			    case 11:
 			    	break;
@@ -147,6 +149,76 @@ public class library_database {
 	}
 	
 	
+	public static void return_book(){
+		
+		try{
+			System.out.println("Press 1 to return book or 2 to mark book as lost");
+			int choice = in.nextInt();
+		    in.nextLine();
+		    
+		    System.out.println("Enter the ISBN of the book:");
+	    	String isbn = in.nextLine();
+		    
+			System.out.println("Enter the copy number of the book:");
+	    	String copy_number = in.nextLine();
+	    	
+	    	long time = System.currentTimeMillis();
+	    	java.sql.Date date = new java.sql.Date(time);
+	    	
+	    	//This section checks to make sure a book is available
+	    	String check_query = "SELECT co.due_date, co.user_id FROM BOOK_STOCK bs, CHECK_OUT co where co.isbn = ? and co.copy_number = ? and bs.copy_number = ? and location = 'checkedout' or location = 'lost'";
+	    	PreparedStatement check_state= con.prepareStatement(check_query);
+	    	check_state.setString(1, isbn);
+	    	check_state.setString(2, copy_number);
+	    	check_state.setString(3, copy_number);
+	    	ResultSet check_result = check_state.executeQuery();
+	    	if (check_result.next()){
+	    		java.sql.Date due_date = check_result.getDate("due_date");
+	    		int user_id = check_result.getInt("user_id");
+
+		    	String query3 = "UPDATE CHECK_OUT SET return_date = ? WHERE user_id = ? AND isbn = ? AND copy_number = ? AND due_date = ?";
+		    	PreparedStatement state3 = con.prepareStatement(query3);
+		    	state3.setDate(1, date);
+		    	state3.setInt(2, user_id);
+		    	state3.setString(3, isbn);
+		    	state3.setString(4, copy_number);
+		    	state3.setDate(5, due_date);
+		    	System.out.println(state3);
+		    	state3.executeUpdate();
+		    	if(choice == 2)
+		    	{
+			    	String query4 = "UPDATE BOOK_STOCK SET location = 'Lost' WHERE isbn = ? AND copy_number = ?";
+			    	PreparedStatement state4 = con.prepareStatement(query4);
+			    	state4.setString(1, isbn);
+			    	state4.setString(2, copy_number);
+			    	System.out.println(state4);
+			    	state4.executeUpdate();
+			    	System.out.println("*Book ISBN " + isbn +" has been marked as lost on: " + date);
+		    	}
+		    	else{
+			    	String query4 = "UPDATE BOOK_STOCK SET location = 'Shelving' WHERE isbn = ? AND copy_number = ?";
+			    	PreparedStatement state4 = con.prepareStatement(query4);
+			    	state4.setString(1, isbn);
+			    	state4.setString(2, copy_number);
+			    	//System.out.println(state4);
+			    	state4.executeUpdate();
+			    	System.out.println("*Book ISBN " + isbn +" has been returned on: " + date);
+		    	}
+	    	}	
+		}
+		catch(Exception e){
+    		System.out.println("Something went wrong returning the book");
+		}
+		//Forces user to hit enter to return home
+		System.out.println("Please hit enter to return to the main menu");
+    	in.nextLine();
+    	return;
+		
+	}
+	
+	
+	
+	
 	public static void user_report(){
 		try{
 			
@@ -162,7 +234,66 @@ public class library_database {
     	return;
 	}
 	
-	
+	//FUNCTION FOR ALLOWING USER TO RATE A BOOK
+	public static void review_book(){
+		try{
+			System.out.println("Enter userID to review book:");
+	    	String user_id = in.nextLine();
+	    	
+	    	long time = System.currentTimeMillis();
+	    	java.sql.Date date = new java.sql.Date(time);
+	    	
+			String isbn = null;
+			boolean isbn_loop = true;
+			//this loop ensures the isbn exists in the database
+			while (isbn_loop)
+			{
+				System.out.println("Enter the isbn of the book to check out:");
+		    	isbn = in.nextLine();
+		    	String query = "SELECT * FROM BOOK_DIR where isbn = ?";
+		    	PreparedStatement query_statment = con.prepareStatement(query);
+		    	query_statment.setString(1, "" + isbn);
+		    	ResultSet rs1=query_statment.executeQuery();
+		    	if (rs1.next()){
+		    		isbn_loop = false;
+		    	}
+		    	else 
+		    	{
+		        	System.out.println("You can only review books that currently exist in the library.");
+		        	System.out.println("Hit enter to return to the main menu.");
+		        	in.nextLine();
+		        	return;
+		    	}
+			}
+			System.out.println("Enter a numerical score between 1-10:");
+	    	String book_score= in.nextLine();
+	    	//int book_score_int = Integer.parseInt(book_score);
+	    	System.out.println("Write a short review (optional) and press enter to submit:");
+	    	String book_review= in.nextLine();
+			
+	    	String query1 = "INSERT INTO REVIEWS (user_id, isbn, rating, review_text, review_date) "
+	    			+ "VALUES(?,?,?,?,?)";
+	    	PreparedStatement state1 = con.prepareStatement(query1);
+	    	state1.setString(1, user_id);
+	    	state1.setString(2, isbn);
+	    	state1.setString(3, book_score);
+	    	state1.setString(4, book_review);
+	    	state1.setDate(5, date);
+	    	//System.out.println(state1);
+	    	state1.executeUpdate();
+    		System.out.println("Book review successfully entered into database");
+
+		}
+		catch(Exception e){
+    		System.out.println("Something went wrong reviewing this book");
+		}
+		//Forces user to hit enter to return home
+		System.out.println("Please hit enter to return to the main menu");
+    	in.nextLine();
+    	return;
+		
+		
+	}
 	//FUNCTION FOR CHECKING WHICH BOOKS ARE CURRENTLY LATE
 	public static void late_books(){
 		try{
@@ -177,7 +308,7 @@ public class library_database {
 	    	cal.setTime(date);
 	    	cal.add(Calendar.DAY_OF_YEAR,Integer.parseInt(date_string));
 	    	java.sql.Date date1 = new java.sql.Date(cal.getTimeInMillis());
-			System.out.println("The current date is: " + date1);
+			//System.out.println("The current date is: " + date1);
 
 			String late_query = "SELECT d.title, c.isbn, c.copy_number, c.due_date, u.uname, u.phone, u.email "
 					+   "FROM CHECK_OUT c, LIB_USER u, BOOK_DIR d "
@@ -188,11 +319,11 @@ public class library_database {
 	    	query_stat.setString(1, "" + date1);
 	    	ResultSet rs1=query_stat.executeQuery();
 	    	
-	    	System.out.print("LIST OF LATE BOOKS: \n");
+	    	System.out.print("List of late books using date " + date1 + ": \n");
 
 		    while(rs1.next())
 		    {
-		    	System.out.print("book title: ");
+		    	System.out.print("BOOK TITLE: ");
 		    	System.out.print(rs1.getString("title"));
 		    	System.out.print("	ISBN: ");
 		    	System.out.print(rs1.getString("isbn"));
