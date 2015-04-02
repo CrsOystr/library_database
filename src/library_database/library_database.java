@@ -82,13 +82,16 @@ public class library_database {
 			    	review_book();
 			    	break;
 			    case 9:
+			    	browse_books();
 			    	break;
 			    case 10:
 			    	return_book();
 			    	break;
 			    case 11:
+			    	book_report();
 			    	break;
 			    case 12:
+			    	book_stats();
 			    	break;
 			    case 13:
 			    	user_stats();
@@ -100,36 +103,6 @@ public class library_database {
 			    	System.out.println("invalid choice, please enter the integer corresponding to your choice");
 			    }
 		    }
-		    
-		    
-		    ////// OPTION 1 - DO NOT USE, BUT IT IS SOMETHING THAT CAN BE DONE ///////
-		    /*String query_1 = "SELECT * FROM student where sname LIKE \'%" + name + "%\'";
-		    
-		    ResultSet rs1=stmt.executeQuery(query_1);
-		    System.out.println("Results for query 1");
-		    while(rs1.next())
-		    {
-		    	System.out.print("name:");
-		    		System.out.print(rs1.getString("sname"));
-		    }
-		    System.out.println("");
-		    */
-		    /*
-		    String name = "sam";
-		    /////// OPTION 2 - USE THIS TECHNIQUE //////
-		    String query_2 = "SELECT * FROM student where sname LIKE ?";
-		    PreparedStatement query_2_statment = con.prepareStatement(query_2);
-		    
-		    query_2_statment.setString(1, "%" + name + "%");
-		    ResultSet rs2=query_2_statment.executeQuery();
-		    System.out.println("Results for query 2");
-		    while(rs2.next())
-		    {
-		    	System.out.print("name:");
-		    	System.out.print(rs2.getString("sname"));
-		    }
-		    System.out.println("");
-		    */
 		    close();
       	}
      	 catch (Exception e)
@@ -150,7 +123,231 @@ public class library_database {
      	     }
 	         }
 	}
+	 
+	public static void browse_books(){
+		
+		
+		
+		
+	}
 	
+	//Returns stats based over all books
+	//STILL HAVE TO ADD AUTHOR TRACKING
+	public static void book_stats(){
+		try{
+			System.out.println("Enter integer n to see results for the top n users: ");
+	    	String top_n = in.nextLine();
+			int n = Integer.parseInt(top_n);
+		
+	
+		    String query1 = "SELECT b.title, b.isbn, COUNT(c.isbn) "
+		    		+ "FROM CHECK_OUT c, BOOK_DIR b "
+		    		+ "WHERE c.isbn = b.isbn "
+		    		+ "GROUP BY c.isbn "
+		    		+ "ORDER BY count(c.isbn) desc "
+		    		+ "LIMIT ?";
+		    PreparedStatement state1 = con.prepareStatement(query1);
+		    state1.setInt(1, n);
+		    //System.out.println(state1);
+		    ResultSet rs1=state1.executeQuery();
+		    System.out.print("*****Top " + n + " Books that have been checked out the most***** ");
+		    while(rs1.next())
+		    {
+		    	System.out.print("\nBook Title: ");
+		    	System.out.print(rs1.getString("title"));
+		    	System.out.print("		Book ISBN: ");
+		    	System.out.print(rs1.getString("isbn"));
+		    	System.out.print("		Times Checked Out: ");
+		    	System.out.print(rs1.getString("COUNT(c.isbn)"));
+		    }
+		    
+		    
+		    String query2 = "SELECT b.title, b.isbn, COUNT(c.isbn) "
+		    		+ "FROM WAIT_LIST c, BOOK_DIR b "
+		    		+ "WHERE c.isbn = b.isbn "
+		    		+ "GROUP BY c.isbn "
+		    		+ "ORDER BY count(c.isbn) desc "
+		    		+ "LIMIT ?";
+		    PreparedStatement state2 = con.prepareStatement(query2);
+		    state2.setInt(1, n);
+		    //System.out.println(state2);
+		    ResultSet rs2=state2.executeQuery();
+		    System.out.print("\n*****Top " + n + " Books that have been requested the most***** ");
+		    while(rs2.next())
+		    {
+		    	System.out.print("\nBook Title: ");
+		    	System.out.print(rs2.getString("title"));
+		    	System.out.print("		Book ISBN: ");
+		    	System.out.print(rs2.getString("isbn"));
+		    	System.out.print("		Times Requested: ");
+		    	System.out.print(rs2.getString("COUNT(c.isbn)"));
+		    }
+		    
+		    
+		    String query3 = "SELECT b.title, b.isbn, COUNT(c.isbn) "
+		    		+ "FROM BOOK_STOCK c, BOOK_DIR b "
+		    		+ "WHERE c.isbn = b.isbn "
+		    		+ "AND c.location = 'Lost'"
+		    		+ "GROUP BY c.isbn "
+		    		+ "ORDER BY count(c.isbn) desc "
+		    		+ "LIMIT ?";
+		    PreparedStatement state3 = con.prepareStatement(query3);
+		    state3.setInt(1, n);
+		   // System.out.println(state3);
+		    ResultSet rs3=state3.executeQuery();
+		    System.out.print("\n\n*****Top " + n + " Books that have been lost the most*****");
+		    while(rs3.next())
+		    {
+		    	System.out.print("\nBook Title: ");
+		    	System.out.print(rs3.getString("title"));
+		    	System.out.print("		Book ISBN: ");
+		    	System.out.print(rs3.getString("isbn"));
+		    	System.out.print("		Times Lost: ");
+		    	System.out.print(rs3.getString("COUNT(c.isbn)"));
+		    }
+		    
+		    
+		}
+		catch(Exception e){
+			System.out.println("Something went wrong with this report");
+		}
+		//Forces user to hit enter to return home
+		System.out.println("\nPlease hit enter to return to the main menu");
+		in.nextLine();
+		return;
+	 
+	 }
+	//Returns report for a certain book
+	public static void book_report(){
+		try{
+			
+			System.out.println("Enter book ISBN to print a report on the book: ");
+	    	String isbn = in.nextLine();
+	    	String query = "SELECT * FROM BOOK_DIR where isbn = ?";
+	    	PreparedStatement query_statment = con.prepareStatement(query);
+	    	query_statment.setString(1, "" + isbn);
+	    	ResultSet rs1=query_statment.executeQuery();
+	    	if (!rs1.next()){
+	        	System.out.println("A book with this isbn does not exist");
+	        	System.out.println("Hit enter to return to the main menu.");
+	        	in.nextLine();
+	        	return;
+	    	}
+	    	
+		    //returns all of BOOK info
+		    String query2 = "SELECT * FROM BOOK_DIR where isbn = ?";
+		    PreparedStatement state2 = con.prepareStatement(query2);
+		    state2.setString(1, isbn);
+		    ResultSet rs2=state2.executeQuery();
+		    System.out.println("*****BOOK INFO***** ");
+		    while(rs2.next())
+		    {
+		    	System.out.print("Title: ");
+		    	System.out.print(rs2.getString("title"));
+		    	System.out.print("\nAuthor: ");
+		    	System.out.print(rs2.getString("author"));
+		    	System.out.print("\nPublisher: ");
+		    	System.out.print(rs2.getString("publisher"));
+		    	System.out.print("\nPublication Year: ");
+		    	System.out.print(rs2.getString("pub_year"));
+		    	System.out.print("\nBook Format: ");
+		    	System.out.print(rs2.getString("book_format"));
+		    	System.out.print("\nSubject: ");
+		    	System.out.print(rs2.getString("book_subject"));
+		    	System.out.print("\nSummary: ");
+		    	System.out.print(rs2.getString("summary"));
+		    }
+		    
+		    //Returns ALl Books In stock
+		    String query3 = "SELECT * FROM BOOK_STOCK bs "
+		    		+ "where isbn = ?";
+		    PreparedStatement state3 = con.prepareStatement(query3);
+		    state3.setString(1, isbn);
+		   // System.out.println(state3);
+		    ResultSet rs3=state3.executeQuery();
+		    System.out.print("\n\n*****Copies of the Book*****");
+		    while(rs3.next())
+		    {
+		    	System.out.print("\nCopy Number: ");
+		    	System.out.print(rs3.getString("copy_number"));
+		    	System.out.print("   Location: ");
+		    	System.out.print(rs3.getString("location"));
+		    }
+		    
+		    //Returns all users that have checked out book and when
+		    String query4 = "SELECT * FROM CHECK_OUT co, LIB_USER lu "
+		    		+ "where co.user_id = lu.user_id "
+		    		+ "and isbn = ?";
+		    PreparedStatement state4 = con.prepareStatement(query4);
+		    state4.setString(1, isbn);
+		   // System.out.println(state3);
+		    ResultSet rs4=state4.executeQuery();
+		    System.out.print("\n\n*****Users Who Have Checked This Book Out*****");
+		    while(rs4.next())
+		    {
+		    	System.out.print("\nUser ID: ");
+		    	System.out.print(rs4.getString("user_id"));
+		    	System.out.print("   User Name: ");
+		    	System.out.print(rs4.getString("uname"));
+		    	System.out.print("   Check Out Date: ");
+		    	java.sql.Date date = rs4.getDate("due_date");
+		    	Calendar cal = Calendar.getInstance();
+		    	cal.setTime(date);
+		    	cal.add(Calendar.DAY_OF_YEAR,-30);
+		    	java.sql.Date date1 = new java.sql.Date(cal.getTimeInMillis());
+		    	System.out.print(date1);
+		    	System.out.print("   Returned on: ");
+		    	System.out.print(rs4.getString("return_date"));
+		    }
+		    
+		    //Returns All the reviews on a certain book
+		    String query6 = "SELECT r.review_date, r.rating, r.review_text "
+		    		+ "FROM REVIEWS r, BOOK_DIR b "
+		    		+ "where r.isbn = ? "
+		    		+ "AND r.isbn = b.isbn";
+		    PreparedStatement state6 = con.prepareStatement(query6);
+		    state6.setString(1, isbn);
+		    //System.out.println(state6);
+		    ResultSet rs6=state6.executeQuery();
+		    System.out.print("\n\n*****Book Reviews*****");
+		    while(rs6.next())
+		    {
+		    	System.out.print("\nReview Date: ");
+		    	System.out.print(rs6.getDate("review_date"));
+		    	System.out.print("   Rating: ");
+		    	System.out.print(rs6.getString("rating"));
+		    	System.out.print("   Review: ");
+		    	System.out.print(rs6.getString("review_text"));
+		    }
+			
+		    
+		    String query7 = "SELECT AVG(r.rating) "
+		    		+ "FROM REVIEWS r, BOOK_DIR b "
+		    		+ "where r.isbn = ? "
+		    		+ "AND r.isbn = b.isbn";
+		    PreparedStatement state7 = con.prepareStatement(query7);
+		    state7.setString(1, isbn);
+		    ResultSet rs7=state7.executeQuery();
+		    if(rs7.next()){
+		    	System.out.print("\nAverage Review: ");
+		    	System.out.print(rs7.getString(1));
+		    }
+
+			
+			
+		}
+		catch(Exception e){
+    		System.out.println("Something went wrong with this report");
+		}
+		//Forces user to hit enter to return home
+		System.out.println("\nPlease hit enter to return to the main menu");
+    	in.nextLine();
+    	return;
+		
+		
+	}
+	
+	//FUnction to receive user stats for N
 	public static void user_stats(){
 		try{
 		    System.out.println("Enter integer n to see results for the top n users: ");
@@ -188,7 +385,7 @@ public class library_database {
 		    		+ "LIMIT ?";
 		    PreparedStatement state2 = con.prepareStatement(query2);
 		    state2.setInt(1, n);
-		    System.out.println(state2);
+		   // System.out.println(state2);
 		    ResultSet rs2=state2.executeQuery();
 		    System.out.print("\n*****Top " + n + " users who have rated the most books***** ");
 		    while(rs2.next())
@@ -202,15 +399,18 @@ public class library_database {
 		    }
 		    
 		    
-		    String query3 = "SELECT c.user_id, l.uname, COUNT(c.user_id) "
-		    		+ "FROM REVIEWS c, LIB_USER l "
-		    		+ "WHERE c.user_id = l.user_id "
-		    		+ "GROUP BY c.user_id "
+		    String query3 = "SELECT l.user_id, l.uname, count(l.user_id) "
+		    		+ "FROM CHECK_OUT c, LIB_USER l, BOOK_STOCK b "
+		    		+ "WHERE c.isbn = b.isbn "
+		    		+ "AND c.copy_number = b.copy_number "
+		    		+ "AND l.user_id = c.user_id "
+		    		+ "AND b.location = 'Lost' "
+		    		+ "GROUP BY l.user_id "
 		    		+ "ORDER BY count(c.user_id) desc "
 		    		+ "LIMIT ?";
 		    PreparedStatement state3 = con.prepareStatement(query3);
 		    state3.setInt(1, n);
-		    System.out.println(state3);
+		   // System.out.println(state3);
 		    ResultSet rs3=state3.executeQuery();
 		    System.out.print("\n*****Top " + n + " users who have lost the most books***** ");
 		    while(rs3.next())
@@ -220,7 +420,7 @@ public class library_database {
 		    	System.out.print("		Full Name: ");
 		    	System.out.print(rs3.getString("uname"));
 		    	System.out.print("		Books Lost: ");
-		    	System.out.print(rs3.getString("COUNT(c.user_id)"));
+		    	System.out.print(rs3.getString("COUNT(l.user_id)"));
 		    }
 			
 			
@@ -408,11 +608,14 @@ public class library_database {
 	    	check_state.setString(4, copy_number);
 	    	//System.out.println(check_state);
 
+	    	
+	    	// if book is available
 	    	ResultSet check_result = check_state.executeQuery();
 	    	if (check_result.next()){
 	    		java.sql.Date due_date = check_result.getDate("due_date");
 	    		int user_id = check_result.getInt("user_id");
 
+	    		//Updates the checkout table
 		    	String query3 = "UPDATE CHECK_OUT SET return_date = ? WHERE user_id = ? AND isbn = ? AND copy_number = ? AND due_date = ?";
 		    	PreparedStatement state3 = con.prepareStatement(query3);
 		    	state3.setDate(1, date);
@@ -441,6 +644,17 @@ public class library_database {
 			    	state4.executeUpdate();
 			    	System.out.println("*Book ISBN " + isbn +" has been returned on: " + date);
 		    	}
+		    	
+		    	String wait_query = "SELECT * FROM WAIT_LIST where isbn = ?";
+		    	PreparedStatement query_stat = con.prepareStatement(wait_query);
+		    	query_stat.setString(1, "" + isbn);
+		    	ResultSet rs1=query_stat.executeQuery();
+			    System.out.println("Users on waitlist for book: ");
+			    while(rs1.next())
+			    {
+			    	System.out.print("\nname:");
+			    	System.out.print(rs1.getString("user_id"));
+			    }
 	    	}	
 		}
 		catch(Exception e){
@@ -942,7 +1156,7 @@ public class library_database {
  	        	 	System.out.println ("Database connection terminated");
                  }
          	 catch (Exception e) { /* ignore close errors */ }
- 	     }
+			}
          }	
 	 
 	 System.out.println("Program completed");
