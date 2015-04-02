@@ -7,6 +7,8 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.Scanner;
 
+import com.sun.org.apache.bcel.internal.classfile.InnerClass;
+
 public class library_database {
 
 	static Statement stmt = null;
@@ -111,7 +113,7 @@ public class library_database {
 		    }
 		    System.out.println("");
 		    */
-		    
+		    /*
 		    String name = "sam";
 		    /////// OPTION 2 - USE THIS TECHNIQUE //////
 		    String query_2 = "SELECT * FROM student where sname LIKE ?";
@@ -126,7 +128,7 @@ public class library_database {
 		    	System.out.print(rs2.getString("sname"));
 		    }
 		    System.out.println("");
-		    
+		    */
 		    close();
       	}
      	 catch (Exception e)
@@ -149,8 +151,91 @@ public class library_database {
 	}
 	
 	
-	public static void return_book(){
-		
+	
+	//Function to determ
+	public static void user_report(){
+		try{
+			//This whole block takes in user input for the user_id then checks to see if there is a user with that Id 
+		    System.out.println("Enter user ID to print a report on the user: ");
+	    	String user_id = in.nextLine();
+	    	String query = "SELECT * FROM LIB_USER where user_id = ?";
+	    	PreparedStatement query_statment = con.prepareStatement(query);
+	    	query_statment.setString(1, "" + user_id);
+	    	ResultSet rs1=query_statment.executeQuery();
+	    	if (!rs1.next()){
+	        	System.out.println("A user with this ID does not exist");
+	        	System.out.println("Hit enter to return to the main menu.");
+	        	in.nextLine();
+	        	return;
+	    	}
+	    	
+		    //returns all of user information
+		    String query2 = "SELECT * FROM LIB_USER where user_id = ?";
+		    PreparedStatement state2 = con.prepareStatement(query2);
+		    state2.setString(1, user_id);
+		    ResultSet rs2=state2.executeQuery();
+		    System.out.println("*****User Info***** ");
+		    while(rs2.next())
+		    {
+		    	System.out.print("Username: ");
+		    	System.out.print(rs2.getString("username"));
+		    	System.out.print("\nFull Name: ");
+		    	System.out.print(rs2.getString("uname"));
+		    	System.out.print("\nAddress: ");
+		    	System.out.print(rs2.getString("address"));
+		    	System.out.print("\nEmail: ");
+		    	System.out.print(rs2.getString("email"));
+		    	System.out.print("\nPhone: ");
+		    	System.out.print(rs2.getString("phone"));
+		    }
+		    //returns all of user information
+		    String query3 = "SELECT * FROM BOOK_STOCK bs, CHECK_OUT co, BOOK_DIR bd "
+		    		+ "where co.user_id = ? "
+		    		+ "and co.copy_number = bs.copy_number "
+		    		+ "AND co.isbn = bs.isbn "
+		    		+ "AND co.isbn = bd.isbn "
+		    		+ "and location <> 'checkedout' "
+		    		+ "and location <> 'Lost'";
+		    PreparedStatement state3 = con.prepareStatement(query3);
+		    state3.setString(1, user_id);
+		   // System.out.println(state3);
+
+		    ResultSet rs3=state3.executeQuery();
+		    System.out.print("\n*****Returned Books*****");
+		    while(rs3.next())
+		    {
+		    	System.out.print("\nTitle: ");
+		    	System.out.print(rs3.getString("title"));
+		    	System.out.print("   ISBN: ");
+		    	System.out.print(rs3.getString("isbn"));
+		    	System.out.print("   CheckOutDate: ");
+		    	java.sql.Date date = rs3.getDate("due_date");
+		    	Calendar cal = Calendar.getInstance();
+		    	cal.setTime(date);
+		    	cal.add(Calendar.DAY_OF_YEAR,-30);
+		    	java.sql.Date date1 = new java.sql.Date(cal.getTimeInMillis());
+		    	System.out.print(date1);
+		    	System.out.print("   ReturnDate: ");
+		    	System.out.print(rs3.getString("return_date"));
+		    }
+		    
+
+
+			
+		}
+		catch(Exception e){
+    		System.out.println("Something went wrong with this report");
+		}
+		//Forces user to hit enter to return home
+		System.out.println("\nPlease hit enter to return to the main menu");
+    	in.nextLine();
+    	return;
+	}
+	
+	
+	
+	//FUNCTION FOR RETURNING BOOKS
+	public static void return_book(){	
 		try{
 			System.out.println("Press 1 to return book or 2 to mark book as lost");
 			int choice = in.nextInt();
@@ -166,11 +251,12 @@ public class library_database {
 	    	java.sql.Date date = new java.sql.Date(time);
 	    	
 	    	//This section checks to make sure a book is available
-	    	String check_query = "SELECT co.due_date, co.user_id FROM BOOK_STOCK bs, CHECK_OUT co where co.isbn = ? and co.copy_number = ? and bs.copy_number = ? and location = 'checkedout' or location = 'lost'";
+	    	String check_query = "SELECT co.due_date, co.user_id FROM BOOK_STOCK bs, CHECK_OUT co where co.isbn = ? and bs.isbn = ? and co.copy_number = ? and bs.copy_number = ? and location = 'checkedout' or location = 'lost'";
 	    	PreparedStatement check_state= con.prepareStatement(check_query);
 	    	check_state.setString(1, isbn);
-	    	check_state.setString(2, copy_number);
+	    	check_state.setString(2, isbn);
 	    	check_state.setString(3, copy_number);
+	    	check_state.setString(4, copy_number);
 	    	ResultSet check_result = check_state.executeQuery();
 	    	if (check_result.next()){
 	    		java.sql.Date due_date = check_result.getDate("due_date");
@@ -216,23 +302,6 @@ public class library_database {
 		
 	}
 	
-	
-	
-	
-	public static void user_report(){
-		try{
-			
-			
-			
-		}
-		catch(Exception e){
-    		System.out.println("Something went wrong with this report");
-		}
-		//Forces user to hit enter to return home
-		System.out.println("Please hit enter to return to the main menu");
-    	in.nextLine();
-    	return;
-	}
 	
 	//FUNCTION FOR ALLOWING USER TO RATE A BOOK
 	public static void review_book(){
