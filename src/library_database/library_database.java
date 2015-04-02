@@ -188,7 +188,7 @@ public class library_database {
 		    	System.out.print("\nPhone: ");
 		    	System.out.print(rs2.getString("phone"));
 		    }
-		    //returns all of user information
+		    //Returns ALl Books Checked Out and Returned
 		    String query3 = "SELECT * FROM BOOK_STOCK bs, CHECK_OUT co, BOOK_DIR bd "
 		    		+ "where co.user_id = ? "
 		    		+ "and co.copy_number = bs.copy_number "
@@ -199,9 +199,8 @@ public class library_database {
 		    PreparedStatement state3 = con.prepareStatement(query3);
 		    state3.setString(1, user_id);
 		   // System.out.println(state3);
-
 		    ResultSet rs3=state3.executeQuery();
-		    System.out.print("\n*****Returned Books*****");
+		    System.out.print("\n\n*****Returned Books*****");
 		    while(rs3.next())
 		    {
 		    	System.out.print("\nTitle: ");
@@ -219,9 +218,76 @@ public class library_database {
 		    	System.out.print(rs3.getString("return_date"));
 		    }
 		    
-
-
-			
+		    //Returns all books lost by the user
+		    String query4 = "SELECT * FROM BOOK_STOCK bs, CHECK_OUT co, BOOK_DIR bd "
+		    		+ "where co.user_id = ? "
+		    		+ "and co.copy_number = bs.copy_number "
+		    		+ "AND co.isbn = bs.isbn "
+		    		+ "AND co.isbn = bd.isbn "
+		    		+ "and location = 'Lost'";
+		    PreparedStatement state4 = con.prepareStatement(query4);
+		    state4.setString(1, user_id);
+		   // System.out.println(state3);
+		    ResultSet rs4=state4.executeQuery();
+		    System.out.print("\n\n*****Lost Books*****");
+		    while(rs4.next())
+		    {
+		    	System.out.print("\nTitle: ");
+		    	System.out.print(rs4.getString("title"));
+		    	System.out.print("   ISBN: ");
+		    	System.out.print(rs4.getString("isbn"));
+		    	System.out.print("   CheckOutDate: ");
+		    	java.sql.Date date = rs4.getDate("due_date");
+		    	Calendar cal = Calendar.getInstance();
+		    	cal.setTime(date);
+		    	cal.add(Calendar.DAY_OF_YEAR,-30);
+		    	java.sql.Date date1 = new java.sql.Date(cal.getTimeInMillis());
+		    	System.out.print(date1);
+		    	System.out.print("   Marked Lost on: ");
+		    	System.out.print(rs4.getString("return_date"));
+		    }
+		    
+		    //Returns All Books USer is Waiting for
+		    String query5 = "SELECT * FROM WAIT_LIST w, BOOK_DIR b "
+		    		+ "where w.user_id = ? "
+		    		+ "AND w.isbn = b.isbn";
+		    PreparedStatement state5 = con.prepareStatement(query5);
+		    state5.setString(1, user_id);
+		    //System.out.println(state5);
+		    ResultSet rs5=state5.executeQuery();
+		    System.out.print("\n\n*****Waiting For Books*****");
+		    while(rs5.next())
+		    {
+		    	System.out.print("\nTitle: ");
+		    	System.out.print(rs5.getString("title"));
+		    	System.out.print("   ISBN: ");
+		    	System.out.print(rs5.getString("isbn"));
+		    	System.out.print("   Waiting Since: ");
+		    	System.out.print(rs5.getDate("wait_since"));
+		    }
+		    
+		    //Returns All the reviews a user has posted
+		    String query6 = "SELECT * FROM REVIEWS r, BOOK_DIR b "
+		    		+ "where r.user_id = ? "
+		    		+ "AND r.isbn = b.isbn";
+		    PreparedStatement state6 = con.prepareStatement(query6);
+		    state6.setString(1, user_id);
+		    //System.out.println(state6);
+		    ResultSet rs6=state6.executeQuery();
+		    System.out.print("\n\n*****Book Reviews*****");
+		    while(rs6.next())
+		    {
+		    	System.out.print("\nTitle: ");
+		    	System.out.print(rs6.getString("title"));
+		    	System.out.print("   ISBN: ");
+		    	System.out.print(rs6.getString("isbn"));
+		    	System.out.print("   Review Date: ");
+		    	System.out.print(rs6.getDate("review_date"));
+		    	System.out.print("   Rating: ");
+		    	System.out.print(rs6.getString("rating"));
+		    	System.out.print("   Review: ");
+		    	System.out.print(rs6.getString("review_text"));
+		    }
 		}
 		catch(Exception e){
     		System.out.println("Something went wrong with this report");
