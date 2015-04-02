@@ -91,6 +91,7 @@ public class library_database {
 			    case 12:
 			    	break;
 			    case 13:
+			    	user_stats();
 			    	break;
 			    case 14:
 			    	looping = false;
@@ -150,9 +151,91 @@ public class library_database {
 	         }
 	}
 	
+	public static void user_stats(){
+		try{
+		    System.out.println("Enter integer n to see results for the top n users: ");
+	    	String top_n = in.nextLine();
+			int n = Integer.parseInt(top_n);
+		
+
+		    String query1 = "SELECT c.user_id, l.uname, COUNT(c.user_id) "
+		    		+ "FROM CHECK_OUT c, LIB_USER l "
+		    		+ "WHERE c.user_id = l.user_id "
+		    		+ "GROUP BY c.user_id "
+		    		+ "ORDER BY count(c.user_id) desc "
+		    		+ "LIMIT ?";
+		    PreparedStatement state1 = con.prepareStatement(query1);
+		    state1.setInt(1, n);
+		    //System.out.println(state1);
+		    ResultSet rs1=state1.executeQuery();
+		    System.out.print("*****Top " + n + " users who have check out the most books***** ");
+		    while(rs1.next())
+		    {
+		    	System.out.print("\nUser ID: ");
+		    	System.out.print(rs1.getString("user_id"));
+		    	System.out.print("		Full Name: ");
+		    	System.out.print(rs1.getString("uname"));
+		    	System.out.print("		Books Checked Out: ");
+		    	System.out.print(rs1.getString("COUNT(c.user_id)"));
+		    }
+		    
+		    
+		    String query2 = "SELECT c.user_id, l.uname, COUNT(c.user_id) "
+		    		+ "FROM REVIEWS c, LIB_USER l "
+		    		+ "WHERE c.user_id = l.user_id "
+		    		+ "GROUP BY c.user_id "
+		    		+ "ORDER BY count(c.user_id) desc "
+		    		+ "LIMIT ?";
+		    PreparedStatement state2 = con.prepareStatement(query2);
+		    state2.setInt(1, n);
+		    System.out.println(state2);
+		    ResultSet rs2=state2.executeQuery();
+		    System.out.print("\n*****Top " + n + " users who have rated the most books***** ");
+		    while(rs2.next())
+		    {
+		    	System.out.print("\nUser ID: ");
+		    	System.out.print(rs2.getString("user_id"));
+		    	System.out.print("		Full Name: ");
+		    	System.out.print(rs2.getString("uname"));
+		    	System.out.print("		Books Rated: ");
+		    	System.out.print(rs2.getString("COUNT(c.user_id)"));
+		    }
+		    
+		    
+		    String query3 = "SELECT c.user_id, l.uname, COUNT(c.user_id) "
+		    		+ "FROM REVIEWS c, LIB_USER l "
+		    		+ "WHERE c.user_id = l.user_id "
+		    		+ "GROUP BY c.user_id "
+		    		+ "ORDER BY count(c.user_id) desc "
+		    		+ "LIMIT ?";
+		    PreparedStatement state3 = con.prepareStatement(query3);
+		    state3.setInt(1, n);
+		    System.out.println(state3);
+		    ResultSet rs3=state3.executeQuery();
+		    System.out.print("\n*****Top " + n + " users who have lost the most books***** ");
+		    while(rs3.next())
+		    {
+		    	System.out.print("\nUser ID: ");
+		    	System.out.print(rs3.getString("user_id"));
+		    	System.out.print("		Full Name: ");
+		    	System.out.print(rs3.getString("uname"));
+		    	System.out.print("		Books Lost: ");
+		    	System.out.print(rs3.getString("COUNT(c.user_id)"));
+		    }
+			
+			
+		}
+		catch(Exception e){
+    		System.out.println("Something went wrong with this report");
+		}
+		//Forces user to hit enter to return home
+		System.out.println("\nPlease hit enter to return to the main menu");
+    	in.nextLine();
+    	return;
+	}
 	
 	
-	//Function to determ
+	//Function to print a complete report of a user
 	public static void user_report(){
 		try{
 			//This whole block takes in user input for the user_id then checks to see if there is a user with that Id 
@@ -323,6 +406,8 @@ public class library_database {
 	    	check_state.setString(2, isbn);
 	    	check_state.setString(3, copy_number);
 	    	check_state.setString(4, copy_number);
+	    	//System.out.println(check_state);
+
 	    	ResultSet check_result = check_state.executeQuery();
 	    	if (check_result.next()){
 	    		java.sql.Date due_date = check_result.getDate("due_date");
@@ -335,7 +420,7 @@ public class library_database {
 		    	state3.setString(3, isbn);
 		    	state3.setString(4, copy_number);
 		    	state3.setDate(5, due_date);
-		    	System.out.println(state3);
+		    	//System.out.println(state3);
 		    	state3.executeUpdate();
 		    	if(choice == 2)
 		    	{
@@ -343,7 +428,7 @@ public class library_database {
 			    	PreparedStatement state4 = con.prepareStatement(query4);
 			    	state4.setString(1, isbn);
 			    	state4.setString(2, copy_number);
-			    	System.out.println(state4);
+			    	//System.out.println(state4);
 			    	state4.executeUpdate();
 			    	System.out.println("*Book ISBN " + isbn +" has been marked as lost on: " + date);
 		    	}
@@ -515,7 +600,7 @@ public class library_database {
 		        	return;
 		    	}
 			}
-			System.out.println("Enter userID to be added to waitlist:");
+			System.out.println("Enter userID to check out the book");
 	    	String user_id = in.nextLine();
 	    	
 	    	String wait_query = "SELECT * FROM WAIT_LIST where isbn = ?";
@@ -535,6 +620,13 @@ public class library_database {
 		    	if (user_id3 == user_id2)
 		    	{
 		    		System.out.println("User " + user_id2 +" is first in line on the waitlist");
+			    	String query4 = "DELETE FROM WAIT_LIST "
+			    			+ "WHERE isbn = ? AND user_id = ?";
+			    	PreparedStatement state4= con.prepareStatement(query4);
+			    	state4.setString(1, isbn);
+			    	state4.setInt(2, user_id2);
+			    	System.out.println(state4);
+			    	state4.executeUpdate();
 
 		    	}
 		    	else
@@ -568,7 +660,7 @@ public class library_database {
 		    	state3.setDate(4,date1);
 		    	//System.out.println(state3);
 		    	state3.executeUpdate();
-		    	
+
 		    	String query4 = "UPDATE BOOK_STOCK SET location = 'checkedout' WHERE isbn = ? AND copy_number = ?";
 		    	PreparedStatement state4= con.prepareStatement(query4);
 		    	state4.setString(1, isbn);
@@ -694,6 +786,8 @@ public class library_database {
 		    	book_state.setString(1, isbn);
 		    	book_state.setInt(2, i);
 		    	book_state.setString(3,location);
+	    		System.out.println(book_state);
+
 		    	book_state.executeUpdate();
 		    	/* ALTERNATE WAY FOR REFERWENCE
 		    	String book_sql = "INSERT INTO BOOK_STOCK(isbn, copy_number, location)"
