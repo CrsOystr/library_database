@@ -768,8 +768,8 @@ public class library_database {
 			    System.out.println("Users on waitlist for book: ");
 			    while(rs1.next())
 			    {
-			    	System.out.print("\nname:");
-			    	System.out.print(rs1.getString("user_id"));
+			    	System.out.print("USER_ID:");
+			    	System.out.print(rs1.getString("user_id") + "\n");
 			    }
 	    	}	
 		}
@@ -955,7 +955,7 @@ public class library_database {
 			    	PreparedStatement state4= con.prepareStatement(query4);
 			    	state4.setString(1, isbn);
 			    	state4.setInt(2, user_id2);
-			    	System.out.println(state4);
+			    	//System.out.println(state4);
 			    	state4.executeUpdate();
 
 		    	}
@@ -998,7 +998,7 @@ public class library_database {
 		    	//System.out.println(state4);
 		    	state4.executeUpdate();
 		    	
-		    	System.out.println("*Book ISBN " + isbn +" Copy Number " + copy_number + " has been checked out Due Date: " + date1);
+		    	System.out.println("*Book ISBN: " + isbn +" Copy Number: " + copy_number + " has been checked out. Due Date: " + date1);
 	    	}
 	    	else{
 	        	System.out.println("There are currently no copies of this book available for checkout"); 
