@@ -125,10 +125,126 @@ public class library_database {
 	}
 	 
 	public static void browse_books(){
+		try{
+			System.out.println("Please enter the term you would like to search the library for:");
+			String search_term = in.nextLine();
+			System.out.println("would you like the search to include the authors column (0 for no, 1 for yes)");
+	    	String n = in.nextLine();
+			int author = Integer.parseInt(n);
+			System.out.println("would you like the search to include the publisher column (0 for no, 1 for yes)");
+	    	String n1 = in.nextLine();
+			int publisher = Integer.parseInt(n1);
+			System.out.println("would you like the search to include title column (0 for no, 1 for yes)");
+	    	String n2 = in.nextLine();
+			int title = Integer.parseInt(n2);
+			System.out.println("would you like to search the subject column (0 for no, 1 for yes)");
+	    	String n3 = in.nextLine();
+			int subject = Integer.parseInt(n3);
+			//System.out.println("how would you like to sort results (0 for year published, 1 for average review score, 2 popularity of book)");
+	    	//String n4 = in.nextLine();
+			//int sorting = Integer.parseInt(n4);
+			System.out.println("Which books would you like to be displayed (0 for all books in library, 1 for books that are only available for checkout)");
+	    	String n5 = in.nextLine();
+			int book_select = Integer.parseInt(n5);
+			
+			String column_string = "";
+			
+			if(author == 1) {
+				column_string = column_string + "author LIKE '%" + search_term + "%' ";
+				if(publisher == 1) {column_string = column_string + "OR publisher LIKE '%" + search_term + "%' ";}
+				if(title == 1) {column_string = column_string + "OR title LIKE '%" + search_term + "%' ";}
+				if(subject == 1) {column_string = column_string + "OR book_subject LIKE '%" + search_term + "%' ";}
+			
+			}else if(publisher == 1){
+				{column_string = column_string + "publisher LIKE '%" + search_term + "%' ";}
+				if(title == 1) {column_string = column_string + "OR title LIKE '%" + search_term + "%' ";}
+				if(subject == 1) {column_string = column_string + "OR book_subject LIKE '%" + search_term + "%' ";}
+			}else if(title == 1) {
+				column_string = column_string + "title LIKE '%" + search_term + "%' ";
+				if(subject == 1) {column_string = column_string + "OR book_subject LIKE '%" + search_term + "%' ";}
+			}else if(subject == 1){
+				column_string = column_string + "book_subject LIKE '%" + search_term + "%' ";
+			}
+				//System.out.println(column_string);
+
+			if(book_select == 0){
+			  String query1 = "SELECT * "
+			    		+ "FROM BOOK_DIR bd "
+			    		+ "WHERE "
+			    		+ column_string
+			    		+ "GROUP BY bd.isbn "
+			    		+ "ORDER BY bd.pub_year desc ";
+			    PreparedStatement state1 = con.prepareStatement(query1);
+			    //state1.setString(1, column_string);
+			    //System.out.println(state1);
+			  
+			    ResultSet rs1=state1.executeQuery();
+			    System.out.print("*****Books that satisfied your search***** ");
+			    while(rs1.next())
+			    {
+			    	System.out.print("\nTitle: ");
+			    	System.out.print(rs1.getString("title"));
+			    	System.out.print("	*Author: ");
+			    	System.out.print(rs1.getString("author"));
+			    	System.out.print("	*Publisher: ");
+			    	System.out.print(rs1.getString("publisher"));
+			    	System.out.print("	*Publication Year: ");
+			    	System.out.print(rs1.getString("pub_year"));
+			    	System.out.print("	*Book Format: ");
+			    	System.out.print(rs1.getString("book_format"));
+			    	System.out.print("	*Subject: ");
+			    	System.out.print(rs1.getString("book_subject"));
+			    	System.out.print("	*Summary: ");
+			    	System.out.print(rs1.getString("summary"));
+			    }
+			}else{
+				  String query1 = "SELECT * "
+				    		+ "FROM BOOK_STOCK bs, BOOK_DIR bd "
+				    		+ "WHERE bs.isbn = bd.isbn AND "
+				    		+ column_string
+				    		+ "GROUP BY bd.isbn "
+				    		+ "ORDER BY bd.pub_year desc ";
+				    PreparedStatement state1 = con.prepareStatement(query1);
+				    //state1.setString(1, column_string);
+				    //System.out.println(state1);
+				  
+				    ResultSet rs1=state1.executeQuery();
+				    System.out.print("*****Books that satisfied your search***** ");
+				    while(rs1.next())
+				    {
+				    	System.out.print("\nTitle: ");
+				    	System.out.print(rs1.getString("title"));
+				    	System.out.print("	*Author: ");
+				    	System.out.print(rs1.getString("author"));
+				    	System.out.print("	*Publisher: ");
+				    	System.out.print(rs1.getString("publisher"));
+				    	System.out.print("	*PublicationYear: ");
+				    	System.out.print(rs1.getString("pub_year"));
+				    	System.out.print("	*BookFormat: ");
+				    	System.out.print(rs1.getString("book_format"));
+				    	System.out.print("	*Subject: ");
+				    	System.out.print(rs1.getString("book_subject"));
+				    	System.out.print("	*Summary: ");
+				    	System.out.print(rs1.getString("summary"));
+				    }
+				
+				
+				
+				
+			}
+			
+			
+			
 		
-		
-		
-		
+			    
+		}
+		catch(Exception e){
+			System.out.println("Something went wrong while searching database");
+		}
+		//Forces user to hit enter to return home
+		System.out.println("\nPlease hit enter to return to the main menu");
+		in.nextLine();
+		return;
 	}
 	
 	//Returns stats based over all books
