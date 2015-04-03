@@ -1,4 +1,5 @@
 //Written by Nicolas Metz for CS5530 - Spring 2015
+//Program that links to an SQL library database and allows for adding of items and querying for information.
 //Base example of code provided by Professor Robert Christensen
 
 package library_database;
@@ -7,10 +8,8 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.Scanner;
 
-import com.sun.org.apache.bcel.internal.classfile.InnerClass;
-
 public class library_database {
-
+	//These are connections to database and scanner to read input
 	static Statement stmt = null;
 	static Connection con = null; 
 	static Scanner in = null;
@@ -20,7 +19,7 @@ public class library_database {
 		System.out.println("Welcome to the Metz Library Database");
 		 try
 		 {
-			 //remember to replace all this info;;;;
+			 //Username and password to define server to connect to
 		     String userName = "cs5530u13";
 	         String password = "90a6snh1";
         	 String url = "jdbc:mysql://georgia.eng.utah.edu/cs5530db13";
@@ -32,9 +31,9 @@ public class library_database {
 	         stmt=con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
 			    
 	         
-	         boolean looping = true;
-			 while(looping){
-		    // how to do query which take user input?
+	        //Creates a loop to go through all the choices at the main menu of library 
+	        boolean looping = true;
+			while(looping){
 		    System.out.println("Welcome to the main menu, what do you wish to do?\n"
 		    		+ "1. Create new library user\n"
 		    		+ "2. Check out books\n"
@@ -112,18 +111,18 @@ public class library_database {
 	         }
      	 finally
 	         {
-     	     if (con != null)
-	             {
+     	     if (con != null){
      	         try
              	 {
 	                 con.close ();
      	             System.out.println ("Database connection terminated");
 	                 }
              	 catch (Exception e) { /* ignore close errors */ }
-     	     }
+	             }
 	         }
 	}
 	 
+	//Function to search for books based on a users search query
 	public static void browse_books(){
 		try{
 			System.out.println("Please enter the term you would like to search the library for:");
@@ -147,21 +146,23 @@ public class library_database {
 	    	String n5 = in.nextLine();
 			int book_select = Integer.parseInt(n5);
 			
+			//This big block determines which columns have been selected to search and creates an adequeate statement
 			String column_string = "";
-			
 			if(author == 1) {
-				column_string = column_string + "author LIKE '%" + search_term + "%' ";
-				if(publisher == 1) {column_string = column_string + "OR publisher LIKE '%" + search_term + "%' ";}
-				if(title == 1) {column_string = column_string + "OR title LIKE '%" + search_term + "%' ";}
-				if(subject == 1) {column_string = column_string + "OR book_subject LIKE '%" + search_term + "%' ";}
-			
+				column_string = column_string + "(author LIKE '%" + search_term + "%' ";
+				if(publisher == 1) {column_string = column_string + "OR publisher LIKE '%" + search_term + "%'";}
+				if(title == 1) {column_string = column_string + "OR title LIKE '%" + search_term + "%'";}
+				if(subject == 1) {column_string = column_string + "OR book_subject LIKE '%" + search_term + "%'";}
+				column_string = column_string + ") ";
 			}else if(publisher == 1){
-				{column_string = column_string + "publisher LIKE '%" + search_term + "%' ";}
-				if(title == 1) {column_string = column_string + "OR title LIKE '%" + search_term + "%' ";}
-				if(subject == 1) {column_string = column_string + "OR book_subject LIKE '%" + search_term + "%' ";}
+				{column_string = column_string + "(publisher LIKE '%" + search_term + "%'";}
+				if(title == 1) {column_string = column_string + "OR title LIKE '%" + search_term + "%'";}
+				if(subject == 1) {column_string = column_string + "OR book_subject LIKE '%" + search_term + "%'";}
+				column_string = column_string + ") ";
 			}else if(title == 1) {
-				column_string = column_string + "title LIKE '%" + search_term + "%' ";
-				if(subject == 1) {column_string = column_string + "OR book_subject LIKE '%" + search_term + "%' ";}
+				column_string = column_string + "(title LIKE '%" + search_term + "%' ";
+				if(subject == 1) {column_string = column_string + "OR book_subject LIKE '%" + search_term + "%'";}
+				column_string = column_string + ") ";
 			}else if(subject == 1){
 				column_string = column_string + "book_subject LIKE '%" + search_term + "%' ";
 			}
@@ -198,11 +199,11 @@ public class library_database {
 			    	System.out.print(rs1.getString("summary"));
 			    }
 			}else{
-				  String query1 = "SELECT * "
+				  String query1 = "SELECT distinct bd.title, bd.author, bd.publisher, bd.pub_year, bd.book_format, bd.book_subject, bd.summary "
 				    		+ "FROM BOOK_STOCK bs, BOOK_DIR bd "
 				    		+ "WHERE bs.isbn = bd.isbn AND "
 				    		+ column_string
-				    		+ "GROUP BY bd.isbn "
+				    		//+ "GROUP BY bs.isbn "
 				    		+ "ORDER BY bd.pub_year desc ";
 				    PreparedStatement state1 = con.prepareStatement(query1);
 				    //state1.setString(1, column_string);
@@ -227,16 +228,7 @@ public class library_database {
 				    	System.out.print("	*Summary: ");
 				    	System.out.print(rs1.getString("summary"));
 				    }
-				
-				
-				
-				
-			}
-			
-			
-			
-		
-			    
+			}    
 		}
 		catch(Exception e){
 			System.out.println("Something went wrong while searching database");
@@ -247,15 +239,14 @@ public class library_database {
 		return;
 	}
 	
-	//Returns stats based over all books
-	//STILL HAVE TO ADD AUTHOR TRACKING
+	//Returns statistics based over all books - Have not added authors
 	public static void book_stats(){
 		try{
 			System.out.println("Enter integer n to see results for the top n users: ");
 	    	String top_n = in.nextLine();
 			int n = Integer.parseInt(top_n);
 		
-	
+			//Query for books that have been checked out most amount of times
 		    String query1 = "SELECT b.title, b.isbn, COUNT(c.isbn) "
 		    		+ "FROM CHECK_OUT c, BOOK_DIR b "
 		    		+ "WHERE c.isbn = b.isbn "
@@ -277,7 +268,7 @@ public class library_database {
 		    	System.out.print(rs1.getString("COUNT(c.isbn)"));
 		    }
 		    
-		    
+		    //Query for returning books that have most requests on the waitlist
 		    String query2 = "SELECT b.title, b.isbn, COUNT(c.isbn) "
 		    		+ "FROM WAIT_LIST c, BOOK_DIR b "
 		    		+ "WHERE c.isbn = b.isbn "
@@ -299,7 +290,7 @@ public class library_database {
 		    	System.out.print(rs2.getString("COUNT(c.isbn)"));
 		    }
 		    
-		    
+		    //
 		    String query3 = "SELECT b.title, b.isbn, COUNT(c.isbn) "
 		    		+ "FROM BOOK_STOCK c, BOOK_DIR b "
 		    		+ "WHERE c.isbn = b.isbn "
@@ -321,8 +312,6 @@ public class library_database {
 		    	System.out.print("		Times Lost: ");
 		    	System.out.print(rs3.getString("COUNT(c.isbn)"));
 		    }
-		    
-		    
 		}
 		catch(Exception e){
 			System.out.println("Something went wrong with this report");
@@ -331,9 +320,9 @@ public class library_database {
 		System.out.println("\nPlease hit enter to return to the main menu");
 		in.nextLine();
 		return;
-	 
 	 }
-	//Returns report for a certain book
+	
+	//Returns report for a certain book - gives information and statistics based on isbn
 	public static void book_report(){
 		try{
 			
@@ -463,7 +452,7 @@ public class library_database {
 		
 	}
 	
-	//FUnction to receive user stats for N
+	//Function returns statistics for N amount of users - Shows users who have checked out, lost, or rated the most books
 	public static void user_stats(){
 		try{
 		    System.out.println("Enter integer n to see results for the top n users: ");
@@ -514,7 +503,7 @@ public class library_database {
 		    	System.out.print(rs2.getString("COUNT(c.user_id)"));
 		    }
 		    
-		    
+		    //Query and section for reporting the n users who have lost the most books
 		    String query3 = "SELECT l.user_id, l.uname, count(l.user_id) "
 		    		+ "FROM CHECK_OUT c, LIB_USER l, BOOK_STOCK b "
 		    		+ "WHERE c.isbn = b.isbn "
@@ -538,8 +527,6 @@ public class library_database {
 		    	System.out.print("		Books Lost: ");
 		    	System.out.print(rs3.getString("COUNT(l.user_id)"));
 		    }
-			
-			
 		}
 		catch(Exception e){
     		System.out.println("Something went wrong with this report");
@@ -550,8 +537,7 @@ public class library_database {
     	return;
 	}
 	
-	
-	//Function to print a complete report of a user
+	//Function to print a complete report of a specified user
 	public static void user_report(){
 		try{
 			//This whole block takes in user input for the user_id then checks to see if there is a user with that Id 
@@ -587,7 +573,8 @@ public class library_database {
 		    	System.out.print("\nPhone: ");
 		    	System.out.print(rs2.getString("phone"));
 		    }
-		    //Returns ALl Books Checked Out and Returned
+		    
+		    //Returns all Books Checked Out and Returned by user
 		    String query3 = "SELECT * FROM BOOK_STOCK bs, CHECK_OUT co, BOOK_DIR bd "
 		    		+ "where co.user_id = ? "
 		    		+ "and co.copy_number = bs.copy_number "
@@ -697,9 +684,7 @@ public class library_database {
     	return;
 	}
 	
-	
-	
-	//FUNCTION FOR RETURNING BOOKS
+	//Function that allows a book to be returned or marks as lost on the current date
 	public static void return_book(){	
 		try{
 			System.out.println("Press 1 to return book or 2 to mark book as lost");
@@ -724,7 +709,6 @@ public class library_database {
 	    	check_state.setString(4, copy_number);
 	    	//System.out.println(check_state);
 
-	    	
 	    	// if book is available
 	    	ResultSet check_result = check_state.executeQuery();
 	    	if (check_result.next()){
@@ -780,11 +764,9 @@ public class library_database {
 		System.out.println("Please hit enter to return to the main menu");
     	in.nextLine();
     	return;
-		
 	}
 	
-	
-	//FUNCTION FOR ALLOWING USER TO RATE A BOOK
+	//Function that allows a user to review and rate a book on the given date
 	public static void review_book(){
 		try{
 			System.out.println("Enter userID to review book:");
@@ -841,10 +823,9 @@ public class library_database {
 		System.out.println("Please hit enter to return to the main menu");
     	in.nextLine();
     	return;
-		
-		
 	}
-	//FUNCTION FOR CHECKING WHICH BOOKS ARE CURRENTLY LATE
+	
+	//Function that returns a list of late books after taking a date input
 	public static void late_books(){
 		try{
 	    	long time = System.currentTimeMillis();
@@ -1068,7 +1049,7 @@ public class library_database {
     	return;
 	}
 	
-	//FUNCTION FOR ADDING COPIES OF BOOKS
+	//Function for adding copies of specified book to wait list, can choose any number of copies
 	public static void add_books(){
 		try{
 			String isbn = null;
@@ -1117,19 +1098,9 @@ public class library_database {
 		    	book_state.setInt(2, i);
 		    	book_state.setString(3,location);
 	    		//System.out.println(book_state);
-
 		    	book_state.executeUpdate();
-		    	/* ALTERNATE WAY FOR REFERWENCE
-		    	String book_sql = "INSERT INTO BOOK_STOCK(isbn, copy_number, location)"
-		    			+ "VALUES('"+isbn+"','"+i+"','"+location+"')"; 
-		    	System.out.println(book_sql);
-
-				stmt.executeUpdate(book_sql);
-		    	 */
 	    	}
     		System.out.println("Copies have succesfully been added to the database");
-
-		
 		}
 		catch(Exception e){
     		System.out.println("Something went wrong adding copies of books to database");
@@ -1140,7 +1111,7 @@ public class library_database {
     	return;
 	}
 	
-	//FUNCTION FOR ADDING NEW BOOK TO THE DATABASE
+	//Function allows information about a new book to be added to the database - DOES NOT ADD ANY COPIES
 	public static void new_book(){
 		try{
 			String isbn = null;
@@ -1195,9 +1166,7 @@ public class library_database {
     	return;
 	}
 	
-	
-	
-	//FUNCTION FOR ADDING A NEW USER TO THE DATABASE
+	//Function allows a new user to be added to the database after providing his/her information
 	public static void new_user(){
 		//Begin try
 		try{
@@ -1251,7 +1220,7 @@ public class library_database {
     	return;
 	}
 	
-	//FUNCTION FOR CLOSING THE CONNECTION TO THE DATABASE
+	//Function closes the connection to the database, simply closes scanner, connection and statement object
 	public static void close(){
 		try{
 			stmt.close();
@@ -1274,7 +1243,6 @@ public class library_database {
          	 catch (Exception e) { /* ignore close errors */ }
 			}
          }	
-	 
 	 System.out.println("Program completed");
 	 return;
 	}
