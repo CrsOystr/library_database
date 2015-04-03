@@ -290,7 +290,7 @@ public class library_database {
 		    	System.out.print(rs2.getString("COUNT(c.isbn)"));
 		    }
 		    
-		    //
+		    //query for selecting books that have been lost the msot
 		    String query3 = "SELECT b.title, b.isbn, COUNT(c.isbn) "
 		    		+ "FROM BOOK_STOCK c, BOOK_DIR b "
 		    		+ "WHERE c.isbn = b.isbn "
@@ -312,6 +312,31 @@ public class library_database {
 		    	System.out.print("		Times Lost: ");
 		    	System.out.print(rs3.getString("COUNT(c.isbn)"));
 		    }
+		    
+		    /*
+		    //query for N most popular authors
+		    String query4 = "SELECT b.title, b.isbn, COUNT(c.isbn) "
+		    		+ "FROM BOOK_STOCK c, BOOK_DIR b "
+		    		+ "WHERE c.isbn = b.isbn "
+		    		+ "AND c.location = 'Lost'"
+		    		+ "GROUP BY c.isbn "
+		    		+ "ORDER BY count(c.isbn) desc "
+		    		+ "LIMIT ?";
+		    PreparedStatement state4 = con.prepareStatement(query4);
+		    state4.setInt(1, n);
+		   // System.out.println(state3);
+		    ResultSet rs4=state4.executeQuery();
+		    System.out.print("\n\n*****Top " + n + " Books that have been lost the most*****");
+		    while(rs4.next())
+		    {
+		    	System.out.print("\nBook Title: ");
+		    	System.out.print(rs4.getString("title"));
+		    	System.out.print("		Book ISBN: ");
+		    	System.out.print(rs4.getString("isbn"));
+		    	System.out.print("		Times Lost: ");
+		    	System.out.print(rs4.getString("COUNT(c.isbn)"));
+		    }
+		    */
 		}
 		catch(Exception e){
 			System.out.println("Something went wrong with this report");
