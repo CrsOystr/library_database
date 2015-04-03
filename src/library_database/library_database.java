@@ -798,7 +798,7 @@ public class library_database {
 			//this loop ensures the isbn exists in the database
 			while (isbn_loop)
 			{
-				System.out.println("Enter the isbn of the book to check out:");
+				System.out.println("Enter the isbn of the book to review:");
 		    	isbn = in.nextLine();
 		    	String query = "SELECT * FROM BOOK_DIR where isbn = ?";
 		    	PreparedStatement query_statment = con.prepareStatement(query);
@@ -998,7 +998,7 @@ public class library_database {
 		    	//System.out.println(state4);
 		    	state4.executeUpdate();
 		    	
-		    	System.out.println("*Book ISBN " + isbn +" has been checked out Due Date: " + date1);
+		    	System.out.println("*Book ISBN " + isbn +" Copy Number " + copy_number + " has been checked out Due Date: " + date1);
 	    	}
 	    	else{
 	        	System.out.println("There are currently no copies of this book available for checkout"); 
@@ -1116,7 +1116,7 @@ public class library_database {
 		    	book_state.setString(1, isbn);
 		    	book_state.setInt(2, i);
 		    	book_state.setString(3,location);
-	    		System.out.println(book_state);
+	    		//System.out.println(book_state);
 
 		    	book_state.executeUpdate();
 		    	/* ALTERNATE WAY FOR REFERWENCE
@@ -1181,7 +1181,7 @@ public class library_database {
 	    	
 	    	String book_sql = "INSERT INTO BOOK_DIR(isbn, title, author, publisher, pub_year, book_format, book_subject, summary)"
 	    			+ "VALUES('"+isbn+"','"+title+"','"+author+"','"+publisher+"','"+pub_year+"','"+format+"','"+book_subject+"','"+summary+"')"; 
-	    	System.out.println(book_sql);
+	    	//System.out.println(book_sql);
 
 			stmt.executeUpdate(book_sql);
 			System.out.println("*New book " + title +" has been added to the database. isbn: " + isbn + "*\n"
